@@ -5,4 +5,4 @@
 
 **Free Software, Hell Yeah!**
 
-[Exemplo de Uso]: <sample/>
+[Exemplo de Uso]: <samples/>
