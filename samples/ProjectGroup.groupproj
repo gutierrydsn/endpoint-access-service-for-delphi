@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{199FAA0F-E6C1-40A9-93DF-F67813B8E5B0}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="GET QueryParam\GetQueryParam.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="hello\server_EAS.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="GetQueryParam">
+        <MSBuild Projects="GET QueryParam\GetQueryParam.dproj"/>
+    </Target>
+    <Target Name="GetQueryParam:Clean">
+        <MSBuild Projects="GET QueryParam\GetQueryParam.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="GetQueryParam:Make">
+        <MSBuild Projects="GET QueryParam\GetQueryParam.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="server_EAS">
+        <MSBuild Projects="hello\server_EAS.dproj"/>
+    </Target>
+    <Target Name="server_EAS:Clean">
+        <MSBuild Projects="hello\server_EAS.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="server_EAS:Make">
+        <MSBuild Projects="hello\server_EAS.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="GetQueryParam;server_EAS"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="GetQueryParam:Clean;server_EAS:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="GetQueryParam:Make;server_EAS:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>
