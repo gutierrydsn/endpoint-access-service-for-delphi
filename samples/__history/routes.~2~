@@ -1,0 +1,10 @@
+"GET" : {
+	"/api/hello/": "uMyController.MyController.hello"
+},
+
+
+"POST" : {},
+
+"DELETE" : {},
+
+"PUT" : {}

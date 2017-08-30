@@ -1,0 +1,17 @@
+*.dcu
+*.exe
+*.dll
+*.orig
+*.bkp
+*.bak
+*.~*
+*.vlb
+*.identcache
+*.stat
+*.local
+*.identcache
+*.nbLog
+.orig
+*/__recovery/*
+*/bin/*
+*/Win32/*

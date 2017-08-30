@@ -1,0 +1,10 @@
+"GET" : {
+	"/api/ping/": "healthCheck.controller.HealthCheckController.ping"  
+},
+
+
+"POST" : {},
+
+"DELETE" : {},
+
+"PUT" : {}
