@@ -65,9 +65,9 @@ function TListParameterHelper.getParameter(name: String): TParameter;
 var i : integer;
 begin
   result := nil;
-  for i := 0 to Length(self) do
+  for i := 0 to Length(self)-1 do
   begin
-    if (UpperCase(self[i].name) <> UpperCase(name))  then
+    if (UpperCase(self[i].name).trim <> UpperCase(name).trim)  then
       continue;
 
     result := self[i];
