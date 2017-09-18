@@ -105,7 +105,7 @@ begin
   result := '';
   for v_param in QueryParams do
   begin
-    if (v_param.Split(['='])[0] = param) then
+    if (UpperCase(v_param.Split(['='])[0]) = UpperCase(param)) then
     begin
       result := v_param.Split(['='])[1];
 
