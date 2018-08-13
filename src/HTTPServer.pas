@@ -9,8 +9,9 @@ uses
 type
   THTTPServer = class(TIdHTTPServer)
     private
-      fRequestInfo : TIdHTTPRequestInfo;
-      fResponseInfo: TIdHTTPResponseInfo;
+      fPathResource : String;
+      fRequestInfo  : TIdHTTPRequestInfo;
+      fResponseInfo : TIdHTTPResponseInfo;
 
       procedure Connect(AContext: TIdContext);
       procedure CommandGet(AContext: TIdContext;
@@ -19,27 +20,39 @@ type
         ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
 
       class var instance : THTTPServer;
+    function isResource(ARequestInfo: TIdHTTPRequestInfo;
+      AResponseInfo: TIdHTTPResponseInfo): Boolean;
     public
       constructor Create(AOwner: TComponent);reintroduce;
       
       class function getInstance() : THTTPServer;
     published
-      property RequestInfo : TIdHTTPRequestInfo  read fRequestInfo ;
-      property ResponseInfo: TIdHTTPResponseInfo read fResponseInfo;
+      property PathResource : String              read fPathResource write fPathResource;
+      property RequestInfo  : TIdHTTPRequestInfo  read fRequestInfo ;
+      property ResponseInfo : TIdHTTPResponseInfo read fResponseInfo;
 
   end;
+
+resourceString
+  FILE_INDEX = 'index.html';
+  DEFAULT_PATH_RESOURCES = 'resource\';
 
 implementation
 
 uses
-  routes;
+  routes, Vcl.Forms;
 
 procedure THTTPServer.CommandGet(AContext: TIdContext;
   ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
 begin
+
+  if (isResource(ARequestInfo, AResponseInfo)) then
+    exit;
+
   fRequestInfo  := ARequestInfo;
   fResponseInfo := AResponseInfo;
   AResponseInfo.ContentText := TRoutes.getInstance.endpoint(ARequestInfo,AResponseInfo);
+
 end;
 
 procedure THTTPServer.CommandOther(AContext: TIdContext;
@@ -66,7 +79,9 @@ begin
     
   self.OnConnect     := Connect;
   self.OnCommandGet  := CommandGet;
-  self.OnCommandOther:= CommandOther;  
+  self.OnCommandOther:= CommandOther;
+
+  fPathResource := DEFAULT_PATH_RESOURCES;
 end;
 
 class function THTTPServer.getInstance: THTTPServer;
@@ -75,6 +90,30 @@ begin
     THTTPServer.Create(nil);
 
   result := instance;
+end;
+
+function THTTPServer.isResource(ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo) : Boolean;
+var
+  strm : TStringList;
+  path : String;
+begin
+  path := ARequestInfo.URI;
+  if (path = '\') or (path = '/') then
+    path := FILE_INDEX;
+
+  path := ExtractFilePath(application.ExeName) + PathResource + path;
+
+  if Not(FileExists(path)) then
+    exit;
+
+  strm := TStringList.Create();
+  try
+    strm.LoadFromFile(path, TEncoding.UTF8);
+    AResponseInfo.ContentText := strm.Text;
+    result := true;
+  finally
+    strm.free;
+  end;
 end;
   
 end.
