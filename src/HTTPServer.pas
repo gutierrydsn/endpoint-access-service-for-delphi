@@ -22,6 +22,7 @@ type
       class var instance : THTTPServer;
     function isResource(ARequestInfo: TIdHTTPRequestInfo;
       AResponseInfo: TIdHTTPResponseInfo): Boolean;
+    function getContentType(sExt : String): String;
     public
       constructor Create(AOwner: TComponent);reintroduce;
       
@@ -94,26 +95,55 @@ end;
 
 function THTTPServer.isResource(ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo) : Boolean;
 var
-  strm : TStringList;
-  path : String;
+  strm   : TFileStream;
+  path   : String;
+  sExt   : String;
 begin
   path := ARequestInfo.URI;
   if (path = '\') or (path = '/') then
     path := FILE_INDEX;
+
+  sExt := ExtractFileExt(path);
 
   path := ExtractFilePath(application.ExeName) + PathResource + path;
 
   if Not(FileExists(path)) then
     exit;
 
-  strm := TStringList.Create();
+  strm := TFileStream.Create(path, fmOpenRead);
   try
-    strm.LoadFromFile(path, TEncoding.UTF8);
-    AResponseInfo.ContentText := strm.Text;
+    AResponseInfo.ContentType := getContentType(sExt);
+    AResponseInfo.ContentStream := strm;
     result := true;
   finally
-    strm.free;
+    //strm.free;
   end;
 end;
-  
+
+function THTTPServer.getContentType(sExt : String) : String;
+begin
+  //; charset=UTF-8
+  sExt := StringReplace(sExt, '.', '', [rfReplaceAll]);
+
+  if  (ansicomparestr(sExt,'htm') = 0) or  (ansicomparestr(sExt,'html') = 0) then
+    exit('text/html');
+
+  if  (ansicomparestr(sExt,'js') = 0) then
+    exit('text/javascript');
+
+  if  (ansicomparestr(sExt,'css') = 0) then
+    exit('text/css');
+
+  if  (ansicomparestr(sExt,'woff') = 0) then
+    exit('application/x-font-woff');
+
+  if  (ansicomparestr(sExt,'ttf') = 0) then
+    exit('application/octet-stream');
+
+  if  (ansicomparestr(sExt,'jpeg') = 0) or (ansicomparestr(sExt,'jpg') = 0)then
+    exit('image/jpeg');
+
+  result := 'application/' + sExt;
+end;
+
 end.
