@@ -12,6 +12,7 @@ type
       fPathResource : String;
       fRequestInfo  : TIdHTTPRequestInfo;
       fResponseInfo : TIdHTTPResponseInfo;
+      fAllowAllCors : Boolean;
 
       procedure Connect(AContext: TIdContext);
       procedure CommandGet(AContext: TIdContext;
@@ -20,14 +21,17 @@ type
         ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
 
       class var instance : THTTPServer;
-    function isResource(ARequestInfo: TIdHTTPRequestInfo;
-      AResponseInfo: TIdHTTPResponseInfo): Boolean;
-    function getContentType(sExt : String): String;
+      function isResource(ARequestInfo: TIdHTTPRequestInfo;
+        AResponseInfo: TIdHTTPResponseInfo): Boolean;
+      function getContentType(sExt : String): String;
+
+      procedure allowCors;
     public
       constructor Create(AOwner: TComponent);reintroduce;
       
       class function getInstance() : THTTPServer;
     published
+      property AllowAllCors : Boolean             read fAllowAllCors write fAllowAllCors;
       property PathResource : String              read fPathResource write fPathResource;
       property RequestInfo  : TIdHTTPRequestInfo  read fRequestInfo ;
       property ResponseInfo : TIdHTTPResponseInfo read fResponseInfo;
@@ -43,6 +47,21 @@ implementation
 uses
   routes, Vcl.Forms;
 
+procedure THTTPServer.allowCors;
+begin
+  if not(allowAllCors) then
+    exit;
+
+  fResponseInfo.CustomHeaders.AddValue('Access-Control-Allow-Origin','*');
+  fResponseInfo.CustomHeaders.Values['origin'] := '*';
+  fResponseInfo.CustomHeaders.Values['Access-Control-Allow-Headers'] := 'Content-Type, Accept, jwtusername, jwtpassword, authentication, authorization';
+  fResponseInfo.CustomHeaders.Values['Access-Control-Expose-Headers'] := '';
+  fResponseInfo.CustomHeaders.Values['Access-Control-Request-Method'] := 'GET,HEAD,PUT,PATCH,POST,DELETE';
+  fResponseInfo.CustomHeaders.Values['Access-Control-Request-Headers'] := 'access-control-request-method';
+  fResponseInfo.CustomHeaders.Values['Access-Control-Allow-Credentials'] := 'true';
+  fResponseInfo.CustomHeaders.Values['Access-Control-Allow-Methods'] := 'GET,HEAD,PUT,PATCH,POST,DELETE';
+end;
+
 procedure THTTPServer.CommandGet(AContext: TIdContext;
   ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
 begin
@@ -52,8 +71,10 @@ begin
 
   fRequestInfo  := ARequestInfo;
   fResponseInfo := AResponseInfo;
-  AResponseInfo.ContentText := TRoutes.getInstance.endpoint(ARequestInfo,AResponseInfo);
 
+  AllowCors();
+
+  AResponseInfo.ContentText := TRoutes.getInstance.endpoint(ARequestInfo,AResponseInfo);
 end;
 
 procedure THTTPServer.CommandOther(AContext: TIdContext;
@@ -61,7 +82,13 @@ procedure THTTPServer.CommandOther(AContext: TIdContext;
 begin
   fRequestInfo  := ARequestInfo;
   fResponseInfo := AResponseInfo;
-  AResponseInfo.ContentText := TRoutes.getInstance.endpoint(ARequestInfo,AResponseInfo);
+
+  AllowCors();
+
+  if (ARequestInfo.Command = 'OPTIONS') then
+    AResponseInfo.ResponseNo := 204
+  else
+    AResponseInfo.ContentText := TRoutes.getInstance.endpoint(ARequestInfo,AResponseInfo);
 end;
 
 procedure THTTPServer.Connect(AContext: TIdContext);
