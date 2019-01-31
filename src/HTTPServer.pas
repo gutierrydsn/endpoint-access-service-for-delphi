@@ -5,7 +5,7 @@ interface
 uses
   IdHTTPServer, IdContext, IdCustomHTTPServer, System.Classes,
   System.SysUtils, IdGlobal, IdGlobalProtocols,idMultipartFormData,
-  IdCoderQuotedPrintable, IdCoderMIME, IdHeaderList;
+  IdCoderQuotedPrintable, IdCoderMIME, IdHeaderList, System.IOUtils;
 type
   THTTPServer = class(TIdHTTPServer)
     private
@@ -20,28 +20,29 @@ type
         ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
 
       class var instance : THTTPServer;
-    function isResource(ARequestInfo: TIdHTTPRequestInfo;
-      AResponseInfo: TIdHTTPResponseInfo): Boolean;
-    function getContentType(sExt : String): String;
+      function isResource(ARequestInfo: TIdHTTPRequestInfo;
+        AResponseInfo: TIdHTTPResponseInfo): Boolean;
+      function getContentType(sExt : String): String;
     public
       constructor Create(AOwner: TComponent);reintroduce;
       
       class function getInstance() : THTTPServer;
+
+      function getLocalServer : String;
     published
       property PathResource : String              read fPathResource write fPathResource;
       property RequestInfo  : TIdHTTPRequestInfo  read fRequestInfo ;
       property ResponseInfo : TIdHTTPResponseInfo read fResponseInfo;
-
   end;
 
 resourceString
-  FILE_INDEX = 'index.html';
+  FILE_INDEX = '/index.html';
   DEFAULT_PATH_RESOURCES = 'resource\';
 
 implementation
 
 uses
-  routes, Vcl.Forms;
+  routes;
 
 procedure THTTPServer.CommandGet(AContext: TIdContext;
   ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
@@ -93,9 +94,13 @@ begin
   result := instance;
 end;
 
+function THTTPServer.getLocalServer: String;
+begin
+  result := 'http://127.0.0.1:' + DefaultPort.ToString;
+end;
+
 function THTTPServer.isResource(ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo) : Boolean;
 var
-  strm   : TFileStream;
   path   : String;
   sExt   : String;
 begin
@@ -105,19 +110,18 @@ begin
 
   sExt := ExtractFileExt(path);
 
-  path := ExtractFilePath(application.ExeName) + PathResource + path;
+  {$IF DEFINED(ANDROID) OR (DEFINED(IOS))}
+    path := TPath.GetDocumentsPath + PathDelim + PathResource + path;
+  {$ELSE}
+    path := System.SysUtils.GetCurrentDir + '/'  + PathResource + path;
+  {$ENDIF}
 
   if Not(FileExists(path)) then
     exit;
 
-  strm := TFileStream.Create(path, fmOpenRead);
-  try
-    AResponseInfo.ContentType := getContentType(sExt);
-    AResponseInfo.ContentStream := strm;
-    result := true;
-  finally
-    //strm.free;
-  end;
+  AResponseInfo.ContentType := getContentType(sExt);
+  AResponseInfo.ContentStream := TFileStream.Create(path, fmOpenRead);
+  result := true;
 end;
 
 function THTTPServer.getContentType(sExt : String) : String;
@@ -126,13 +130,13 @@ begin
   sExt := StringReplace(sExt, '.', '', [rfReplaceAll]);
 
   if  (ansicomparestr(sExt,'htm') = 0) or  (ansicomparestr(sExt,'html') = 0) then
-    exit('text/html');
+    exit('text/html; charset=UTF-8');
 
   if  (ansicomparestr(sExt,'js') = 0) then
-    exit('text/javascript');
+    exit('text/javascript; charset=UTF-8');
 
   if  (ansicomparestr(sExt,'css') = 0) then
-    exit('text/css');
+    exit('text/css; charset=UTF-8');
 
   if  (ansicomparestr(sExt,'woff') = 0) then
     exit('application/x-font-woff');

@@ -39,7 +39,7 @@ type
 implementation
 
 uses
-  Vcl.Dialogs, System.SysUtils, System.Rtti, HTTPServer;
+  System.SysUtils, System.Rtti, HTTPServer;
 
 { TController }
 class function TController.addCount: Integer;

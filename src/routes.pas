@@ -240,7 +240,7 @@ begin
     pair := TJSONPair(list_ep.Pairs[i]);
     route  := TRoute.Create;
     route.route_type := MetodoHTTP;
-    route.endpoint   := pair.JsonString.ToString.Replace('"','');
+    route.endpoint   := pair.JsonString.ToString.Replace('\/','/').Replace('"','');
     route.method     := pair.JsonValue.ToString.Replace('"','');
 
     case MetodoHTTP of

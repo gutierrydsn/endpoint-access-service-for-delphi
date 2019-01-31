@@ -1,0 +1,11 @@
+"GET" : {
+        "/api/version/" : "uMainController.mainController.version",
+        "/api/ping/"    : "uMainController.mainController.ping"
+
+},
+"POST" : {
+},
+
+"DELETE" : {},
+
+"PUT" : {}
