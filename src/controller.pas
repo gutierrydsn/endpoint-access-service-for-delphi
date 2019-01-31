@@ -84,6 +84,7 @@ end;
 
 function TController.getRequestBody: String;
 begin
+  RequestInfo.PostStream.Position := 0;
   result := ReadStringFromStream(RequestInfo.PostStream, -1, IndyTextEncoding_UTF8);
 end;
 
