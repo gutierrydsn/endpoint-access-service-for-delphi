@@ -84,7 +84,7 @@ end;
 
 function TController.getRequestBody: String;
 begin
-  result := ReadStringFromStream(RequestInfo.PostStream);
+  result := ReadStringFromStream(RequestInfo.PostStream, -1, IndyTextEncoding_UTF8);
 end;
 
 function TController.getRequestInfo: TIdHTTPRequestInfo;
