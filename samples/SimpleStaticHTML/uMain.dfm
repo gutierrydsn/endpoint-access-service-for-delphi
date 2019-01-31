@@ -3,7 +3,7 @@ object Form1: TForm1
   Top = 0
   BorderIcons = [biSystemMenu]
   Caption = 'EAS for Delphi'
-  ClientHeight = 81
+  ClientHeight = 108
   ClientWidth = 229
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -47,7 +47,7 @@ object Form1: TForm1
   end
   object pnl_bottom: TPanel
     Left = 0
-    Top = 50
+    Top = 77
     Width = 229
     Height = 31
     Align = alBottom
@@ -66,7 +66,7 @@ object Form1: TForm1
   end
   object Panel1: TPanel
     Left = 0
-    Top = 25
+    Top = 50
     Width = 229
     Height = 25
     Align = alTop
@@ -89,9 +89,39 @@ object Form1: TForm1
       Width = 123
       Height = 23
       Align = alClient
-      NumbersOnly = True
       TabOrder = 1
       Text = '1.0.2'
+      ExplicitLeft = 111
+      ExplicitTop = -1
+    end
+  end
+  object Panel2: TPanel
+    Left = 0
+    Top = 25
+    Width = 229
+    Height = 25
+    Align = alTop
+    TabOrder = 3
+    object Edit2: TEdit
+      Left = 1
+      Top = 1
+      Width = 104
+      Height = 23
+      Align = alLeft
+      ReadOnly = True
+      TabOrder = 0
+      Text = 'PathResource'
+      ExplicitLeft = -5
+      ExplicitTop = -3
+    end
+    object StaticPath: TEdit
+      Left = 105
+      Top = 1
+      Width = 123
+      Height = 23
+      Align = alClient
+      TabOrder = 1
+      Text = 'www'
       ExplicitHeight = 21
     end
   end

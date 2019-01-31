@@ -16,7 +16,7 @@ implementation
 
 function mainController.version: String;
 const
-  response = '{version : "%s"}';
+  response = '{"version" : "%s"}';
 begin
   result := Format(response, [nrVersion]);
 end;
@@ -24,7 +24,7 @@ end;
 
 function mainController.ping : String;
 const
-  response = '{response : "true"}';
+  response = '{"response" : "true"}';
 begin
   result := response;
 end;
