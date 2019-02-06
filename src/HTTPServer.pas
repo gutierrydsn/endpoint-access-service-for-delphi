@@ -54,19 +54,18 @@ begin
     exit;
 
   fResponseInfo.CustomHeaders.AddValue('Access-Control-Allow-Origin','*');
-  fResponseInfo.CustomHeaders.Values['origin'] := '*';
-  fResponseInfo.CustomHeaders.Values['Access-Control-Allow-Headers'] := 'Content-Type, Accept, jwtusername, jwtpassword, authentication, authorization';
-  fResponseInfo.CustomHeaders.Values['Access-Control-Expose-Headers'] := '';
-  fResponseInfo.CustomHeaders.Values['Access-Control-Request-Method'] := 'GET,HEAD,PUT,PATCH,POST,DELETE';
-  fResponseInfo.CustomHeaders.Values['Access-Control-Request-Headers'] := 'access-control-request-method';
+  fResponseInfo.CustomHeaders.Values['origin']                           := '*';
+  fResponseInfo.CustomHeaders.Values['Access-Control-Allow-Headers']     := '*';
+  fResponseInfo.CustomHeaders.Values['Access-Control-Expose-Headers']    := '*';
+  fResponseInfo.CustomHeaders.Values['Access-Control-Request-Method']    := '*';
+  fResponseInfo.CustomHeaders.Values['Access-Control-Request-Headers']   := '*';
   fResponseInfo.CustomHeaders.Values['Access-Control-Allow-Credentials'] := 'true';
-  fResponseInfo.CustomHeaders.Values['Access-Control-Allow-Methods'] := 'GET,HEAD,PUT,PATCH,POST,DELETE';
+  fResponseInfo.CustomHeaders.Values['Access-Control-Allow-Methods']     := '*';
 end;
 
 procedure THTTPServer.CommandGet(AContext: TIdContext;
   ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
 begin
-
   if (isResource(ARequestInfo, AResponseInfo)) then
     exit;
 
@@ -106,9 +105,9 @@ begin
    
   instance := self;
     
-  self.OnConnect     := Connect;
-  self.OnCommandGet  := CommandGet;
-  self.OnCommandOther:= CommandOther;
+  self.OnConnect      := Connect;
+  self.OnCommandGet   := CommandGet;
+  self.OnCommandOther := CommandOther;
 
   fPathResource := DEFAULT_PATH_RESOURCES;
 end;
