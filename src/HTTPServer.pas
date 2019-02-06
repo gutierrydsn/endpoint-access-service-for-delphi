@@ -3,7 +3,7 @@ unit HTTPServer;
 interface
 
 uses
-  IdHTTPServer, IdContext, IdCustomHTTPServer, System.Classes,
+  IdHTTPServer, IdContext, IdCustomHTTPServer, System.Classes, System.Types,
   System.SysUtils, IdGlobal, IdGlobalProtocols,idMultipartFormData,
   IdCoderQuotedPrintable, IdCoderMIME, IdHeaderList, System.IOUtils;
 type
@@ -24,6 +24,7 @@ type
       function isResource(ARequestInfo: TIdHTTPRequestInfo;
         AResponseInfo: TIdHTTPResponseInfo): Boolean;
       function getContentType(sExt : String): String;
+      function getResFile(sFile : String) : String;
 
       procedure allowCors;
     public
@@ -126,10 +127,26 @@ begin
   result := 'http://127.0.0.1:' + DefaultPort.ToString;
 end;
 
+function THTTPServer.getResFile(sFile: String): String;
+var
+  tempFile : String;
+begin
+  sFile := ExtractFileName(sFile.Replace('/','\'));
+
+  tempFile := sFile.Replace('.', '_')
+                   .Replace('-', '_')
+                   .Replace('/', EmptyStr)
+                   .Replace('\', EmptyStr);
+
+  result := tempFile;
+end;
+
 function THTTPServer.isResource(ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo) : Boolean;
 var
   path   : String;
   sExt   : String;
+  isRes  : Boolean;
+  resFile: String;
 begin
   path := ARequestInfo.URI;
   if (path = '\') or (path = '/') then
@@ -143,12 +160,26 @@ begin
     path := System.SysUtils.GetCurrentDir + '/'  + PathResource + path;
   {$ENDIF}
 
-  if Not(FileExists(path)) then
+  isRes := UpperCase(ExtractFileExt(PathResource)) = '.RES';
+  if (not(isRes) and Not(FileExists(path))) then
     exit;
 
-  AResponseInfo.ContentType := getContentType(sExt);
-  AResponseInfo.ContentStream := TFileStream.Create(path, fmOpenRead);
-  result := true;
+  try
+    AResponseInfo.ContentType := getContentType(sExt);
+    if (isRes) then
+      begin
+        resFile := getResFile(ARequestInfo.URI);
+        AResponseInfo.ContentStream  := TResourceStream.Create(HInstance, resFile, RT_RCDATA);
+      end
+    else
+      begin
+        AResponseInfo.ContentStream := TFileStream.Create(path, fmOpenRead);
+      end;
+
+    result := true;
+  except
+    result := false;
+  end;
 end;
 
 function THTTPServer.getContentType(sExt : String) : String;
