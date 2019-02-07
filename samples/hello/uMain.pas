@@ -31,6 +31,13 @@ implementation
 procedure TForm1.ButtonStartClick(Sender: TObject);
 begin
   HTTPServer.DefaultPort := StrToIntDef(value_porta.Text,9090);
+
+  //pega os arquivos de um arquivo de recurso
+  HTTPServer.PathResource:= '<meuRes.RES>';
+
+  //pega os arquivos de um diretorio abaixo do exe
+  HTTPServer.PathResource:= '<diretorio de arquivos>';
+
   HTTPServer.Active := not(HTTPServer.Active);
 
   if (HTTPServer.Active) then

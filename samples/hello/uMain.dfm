@@ -22,7 +22,6 @@ object Form1: TForm1
     Height = 25
     Align = alTop
     TabOrder = 0
-    ExplicitWidth = 247
     object edt_porta: TEdit
       Left = 1
       Top = 1
@@ -43,7 +42,6 @@ object Form1: TForm1
       NumbersOnly = True
       TabOrder = 1
       Text = '9090'
-      ExplicitWidth = 141
       ExplicitHeight = 21
     end
   end
@@ -54,8 +52,6 @@ object Form1: TForm1
     Height = 31
     Align = alBottom
     TabOrder = 1
-    ExplicitTop = 139
-    ExplicitWidth = 247
     object ButtonStart: TButton
       Left = 136
       Top = 1
@@ -65,7 +61,6 @@ object Form1: TForm1
       Caption = 'Start'
       TabOrder = 0
       OnClick = ButtonStartClick
-      ExplicitLeft = 154
     end
   end
 end

@@ -1,6 +1,6 @@
 "GET" : {
-	"/api/hello/"      : "uMyController.MyController.hello"
-        "/api/hello/:param": "uMyController.MyController.helloWithParam(param)"
+	"/api/version" : "uMainController.mainController.version"
+        "/api/ping"    : "uMainController.mainController.ping"
 },
 
 

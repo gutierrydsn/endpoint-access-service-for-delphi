@@ -8,7 +8,6 @@ uses
   uMainController in 'uMainController.pas';
 
 {$R *.res}
-
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
