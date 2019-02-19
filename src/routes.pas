@@ -113,7 +113,7 @@ begin
     TController(controller).setRequestInfo(ARequestInfo);
     TController(controller).setResponseInfo(AResponseInfo);
 
-    result := TController(controller).execMethod(route.method_name,route.parameters.getArray);
+    result := TController(controller).execMethod(route.method_name,route.parameters.getArray(true));
   finally
     FreeAndNil(controller);
   end;
@@ -270,9 +270,7 @@ begin
   finally
     FreeAndNil(list);
   end;
-
 end;
-
 
 class procedure TRoutes.releaseInstance;
 begin

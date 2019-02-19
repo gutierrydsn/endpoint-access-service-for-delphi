@@ -1,7 +1,7 @@
 unit parameter;
 
 interface
-uses System.Classes, System.SysUtils, class_.util;
+uses System.Classes, System.SysUtils, class_.util, System.Rtti;
 
 type
   TparameterType =(ptInteger, ptString, ptFloat, ptBoolean);
@@ -25,7 +25,7 @@ type
       procedure addParameter(name : String);overload;
       procedure setParameters(uri, endpoint : String);
 
-      function getArray : TArrayValue;
+      function getArray(pInvert : Boolean = false) : TArrayValue;
       function addParameter : TParameter;overload;
       function getParameter(name : String) : TParameter;
   end;
@@ -51,13 +51,19 @@ begin
   addParameter.name := name;
 end;
 
-function TListParameterHelper.getArray: TArrayValue;
-var i : integer;
+function TListParameterHelper.getArray(pInvert : Boolean): TArrayValue;
+var
+ i   : integer;
+ len : integer;
 begin
-  for i := 0 to length(Self)-1 do
+  len := length(Self)-1;
+  for i := 0 to len do
   begin
     SetLength(result, i+1);
-    result[i] := String(Self[i].value);
+
+    result[i] := Self[i].value;
+    if (pInvert) then
+      result[i] := Self[len-i].value;
   end;
 end;
 

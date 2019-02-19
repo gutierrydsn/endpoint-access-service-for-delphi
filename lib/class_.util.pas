@@ -3,7 +3,7 @@ unit class_.util;
 interface
 Uses  System.Rtti, System.SysUtils;
 type
-   TArrayValue = Array of TValue;
+   TArrayValue = Array of Variant;
 
    TClassUtil = class
       public

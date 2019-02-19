@@ -1,6 +1,11 @@
 "GET" : {
-	"/api/version" : "uMainController.mainController.version"
-        "/api/ping"    : "uMainController.mainController.ping"
+	"/api/version" : "uMyController.mainController.version"
+        "/api/ping"                 : "uMyController.MyController.ping"
+
+        "/api/hello/:param1"          : "uMyController.MyController.helloWithParamInt(param1)"
+        "/api/hello/:param1/:param2"  : "uMyController.MyController.helloWithParam(param1,param2)"
+
+        "/api/hello/:param1/:param2/:param3/:param4"  : "uMyController.MyController.helloWithAllParam(param1,param2,param3,param4)"
 },
 
 

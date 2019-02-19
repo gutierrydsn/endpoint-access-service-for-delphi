@@ -152,6 +152,8 @@ begin
     path := FILE_INDEX;
 
   sExt := ExtractFileExt(path);
+  if (sExt.IsEmpty) then
+    exit(false);
 
   {$IF DEFINED(ANDROID) OR (DEFINED(IOS))}
     path := TPath.GetDocumentsPath + PathDelim + PathResource + path;

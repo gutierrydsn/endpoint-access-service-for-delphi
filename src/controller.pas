@@ -3,7 +3,7 @@ unit controller;
 interface
 
 uses
-  System.Classes, class_.util, IdCustomHTTPServer, IdGlobal;
+  System.Classes, class_.util, IdCustomHTTPServer, IdGlobal, ObjAuto;
 
 type
   TController = class(TInterfacedPersistent)
@@ -50,26 +50,18 @@ end;
 
 function TController.execMethod(MethodName : String; parametes : TArrayValue) : variant;
 var
-  ctxRtti : TRttiContext;
-  typeRtti: TRttiType;
-  metRtti : TRttiMethod;
+  MethodHeader: PMethodInfoHeader;
 begin
-  ctxRtti := TRttiContext.Create;
-  try
-    typeRtti := ctxRtti.GetType(self.ClassType);
-    metRtti  := typeRtti.GetMethod(MethodName);
+  MethodHeader := GetMethodInfo(self, MethodName);
 
-    if not(Assigned(metRtti)) then
-    begin
-      getResponseInfo.ResponseNo := 500;
-      getResponseInfo.ContentText := 'Metodo '+MethodName+ ' não localizado!';
-      Exit;
-    end;
-
-    result   := metRtti.Invoke(self, parametes).ToString;
-  finally
-    ctxRtti.Free;
+  if not(Assigned(MethodHeader)) then
+  begin
+    getResponseInfo.ResponseNo := 500;
+    getResponseInfo.ContentText := 'Metodo '+MethodName+ ' não localizado!';
+    Exit;
   end;
+
+  result := ObjectInvoke(self, MethodHeader,[], parametes);
 end;
 
 class function TController.getCount: Integer;
