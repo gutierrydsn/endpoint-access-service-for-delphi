@@ -27,7 +27,10 @@ type
       fclass_name  : String ;
 
       procedure setMethod(const Value: String);
+      procedure FreeListparameters;
     public
+      destructor Destroy; override;
+
       property route_type : TRouteType     read froute_type  write froute_type ;
       property endpoint   : String         read fendpoint    write fendpoint   ;
       property method     : String         read fmethod      write setMethod   ;
@@ -49,9 +52,10 @@ type
 
       function addRoute(var list : TListRoutes; route : TRoute) : Integer;
       function getListRoutes(route_type : TRouteType) : TListRoutes;
-      
+
       procedure loadFileConfig();
       procedure loadEndPoits(json : TJSONObject; MetodoHTTP : TRouteType);
+      procedure FreeListRoute(froutes: TListRoutes);
     protected
       constructor create;
 
@@ -65,6 +69,8 @@ type
       class procedure releaseInstance;
 
       function endpoint(ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo) : variant;
+
+      Destructor Destroy; override;
   end;
 
 var
@@ -113,11 +119,10 @@ begin
     TController(controller).setRequestInfo(ARequestInfo);
     TController(controller).setResponseInfo(AResponseInfo);
 
-    result := TController(controller).execMethod(route.method_name,route.parameters.getArray(true));
+    result := TController(controller).execMethod(route.method_name, route.parameters.getArray(true));
   finally
     FreeAndNil(controller);
   end;
-
 end;
 
 constructor TRoutes.create;
@@ -130,17 +135,34 @@ begin
   loadFileConfig;
 end;
 
+procedure TRoutes.FreeListRoute(froutes : TListRoutes);
+var
+  i : integer;
+begin
+  for i := Length(froutes)-1 downto 0 do
+    froutes[i].Free;
+
+  SetLength(froutes, 0);
+end;
+
+destructor TRoutes.Destroy;
+begin
+  FreeLIstRoute(froutes_get);
+  FreeLIstRoute(froutes_post);
+  FreeLIstRoute(froutes_put);
+  FreeLIstRoute(froutes_delete);
+  inherited;
+end;
+
 function TRoutes.endpoint(ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo): variant;
 var
   route : TRoute;
 begin
-
   route := FindRoute(ARequestInfo);
-
   if Assigned(route) then
     result := callMethod(ARequestInfo, AResponseInfo, route)
-  else 
-    result := error404(ARequestInfo, AResponseInfo);  
+  else
+    result := error404(ARequestInfo, AResponseInfo);
 end;
 
 function TRoutes.error404(ARequestInfo: TIdHTTPRequestInfo;
@@ -309,6 +331,20 @@ begin
 end;
 
 { TRoute }
+destructor TRoute.Destroy;
+begin
+  FreeListparameters;
+  inherited;
+end;
+
+procedure TRoute.FreeListparameters();
+var
+  i : integer;
+begin
+  for i := Length(fParameters)-1 downto 0 do
+    fParameters[i].Free;
+end;
+
 procedure TRoute.setMethod(const Value: String);
 var
   strList   : TStringList;
