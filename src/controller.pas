@@ -98,9 +98,9 @@ begin
   result := '';
   for v_param in QueryParams do
   begin
-    if (UpperCase(v_param.Split(['='])[0]) = UpperCase(param)) then
+    if (UpperCase(v_param.Split(['='])[0].trim()) = UpperCase(param)) then
     begin
-      result := v_param.Split(['='])[1];
+      result := v_param.Split(['='])[1].trim();
 
       if (upperCase(result) = upperCase('NULL')) then
         result := EmptyStr;
