@@ -12,7 +12,7 @@ type
 
     fRequestInfo : TIdHTTPRequestInfo;
     fResponseInfo: TIdHTTPResponseInfo;
-
+    fRequestBody : String;
 
     function getRequestInfo: TIdHTTPRequestInfo;
     function getResponseInfo: TIdHTTPResponseInfo;

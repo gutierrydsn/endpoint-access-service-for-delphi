@@ -7,12 +7,16 @@ uses
   System.SysUtils, IdGlobal, IdGlobalProtocols,idMultipartFormData,
   IdCoderQuotedPrintable, IdCoderMIME, IdHeaderList, System.IOUtils;
 type
+  TRequestEvent = function (AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo) : Boolean of object;
+
   THTTPServer = class(TIdHTTPServer)
     private
-      fPathResource : String;
-      fRequestInfo  : TIdHTTPRequestInfo;
-      fResponseInfo : TIdHTTPResponseInfo;
-      fAllowAllCors : Boolean;
+      fProcessing            : boolean;
+      fPathResource          : String;
+      fRequestInfo           : TIdHTTPRequestInfo;
+      fResponseInfo          : TIdHTTPResponseInfo;
+      fAllowAllCors          : Boolean;
+      fonEstablishConnection : TRequestEvent;
 
       procedure Connect(AContext: TIdContext);
       procedure CommandGet(AContext: TIdContext;
@@ -27,17 +31,20 @@ type
       function getResFile(sFile : String) : String;
 
       procedure allowCors;
+      procedure validEstablishConnection(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
     public
       constructor Create(AOwner: TComponent);reintroduce;
+      destructor Destroy; override;
       
       class function getInstance() : THTTPServer;
 
       function getLocalServer : String;
     published
-      property AllowAllCors : Boolean             read fAllowAllCors write fAllowAllCors;
-      property PathResource : String              read fPathResource write fPathResource;
-      property RequestInfo  : TIdHTTPRequestInfo  read fRequestInfo ;
-      property ResponseInfo : TIdHTTPResponseInfo read fResponseInfo;
+      property AllowAllCors          : Boolean             read fAllowAllCors          write fAllowAllCors;
+      property PathResource          : String              read fPathResource          write fPathResource;
+      property RequestInfo           : TIdHTTPRequestInfo  read fRequestInfo           ;
+      property ResponseInfo          : TIdHTTPResponseInfo read fResponseInfo          ;
+      property onEstablishConnection : TRequestEvent       read fonEstablishConnection write fonEstablishConnection;
   end;
 
 resourceString
@@ -67,29 +74,51 @@ end;
 procedure THTTPServer.CommandGet(AContext: TIdContext;
   ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
 begin
-  if (isResource(ARequestInfo, AResponseInfo)) then
-    exit;
 
-  fRequestInfo  := ARequestInfo;
-  fResponseInfo := AResponseInfo;
+  while (fProcessing) do
+    Sleep(100);
 
-  AllowCors();
+  fProcessing := true;
+  try
+    if (isResource(ARequestInfo, AResponseInfo)) then
+      exit;
 
-  AResponseInfo.ContentText := TRoutes.getInstance.endpoint(ARequestInfo,AResponseInfo);
+    fRequestInfo  := ARequestInfo;
+    fResponseInfo := AResponseInfo;
+
+    AllowCors();
+    validEstablishConnection(AContext, ARequestInfo, AResponseInfo);
+
+    AResponseInfo.ContentText := TRoutes.getInstance.endpoint(ARequestInfo,AResponseInfo);
+  finally
+    fProcessing := false;
+  end;
 end;
 
 procedure THTTPServer.CommandOther(AContext: TIdContext;
   ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
 begin
-  fRequestInfo  := ARequestInfo;
-  fResponseInfo := AResponseInfo;
+  while (fProcessing) do
+    Sleep(100);
 
-  AllowCors();
+  fProcessing := true;
+  try
+    fRequestInfo  := ARequestInfo;
+    fResponseInfo := AResponseInfo;
 
-  if (ARequestInfo.Command = 'OPTIONS') then
-    AResponseInfo.ResponseNo := 204
-  else
+    AllowCors();
+
+    if (ARequestInfo.Command = 'OPTIONS') then
+    begin
+      AResponseInfo.ResponseNo := 204;
+      exit;
+    end;
+
+    validEstablishConnection(AContext, ARequestInfo, AResponseInfo);
     AResponseInfo.ContentText := TRoutes.getInstance.endpoint(ARequestInfo,AResponseInfo);
+  finally
+    fProcessing := false;
+  end;
 end;
 
 procedure THTTPServer.Connect(AContext: TIdContext);
@@ -111,6 +140,12 @@ begin
   self.OnCommandOther := CommandOther;
 
   fPathResource := DEFAULT_PATH_RESOURCES;
+end;
+
+destructor THTTPServer.Destroy;
+begin
+  instance := nil;
+  inherited;
 end;
 
 class function THTTPServer.getInstance: THTTPServer;
@@ -169,7 +204,7 @@ begin
     AResponseInfo.ContentType := getContentType(sExt);
     if (isRes) then
       begin
-        resFile := getResFile(ARequestInfo.URI);
+        resFile := getResFile(path);
         AResponseInfo.ContentStream  := TResourceStream.Create(HInstance, resFile, RT_RCDATA);
       end
     else
@@ -181,6 +216,13 @@ begin
   except
     result := false;
   end;
+end;
+
+procedure THTTPServer.validEstablishConnection(AContext: TIdContext;
+  ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
+begin
+  if Assigned(onEstablishConnection) and not(onEstablishConnection(AContext, ARequestInfo, AResponseInfo))then
+    raise Exception.Create('Connection denied');
 end;
 
 function THTTPServer.getContentType(sExt : String) : String;
